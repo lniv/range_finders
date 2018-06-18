@@ -89,11 +89,11 @@ void update_cascade(float sample) {
 		current_sample = cascade[i].sum - old_sum;
 		if (cascade[i].valid) {
 			cascade[i].sum_sq = cascade[i].sum_sq + pow(current_sample - cascade[i].prev, 2);
-			cascade[i].N++;
 		}
 		else {
 			cascade[i].valid = true;
 		}
+		cascade[i].N++;
 		cascade[i].prev = current_sample;
 	}
 }
@@ -112,8 +112,13 @@ void print_cascade() {
 		if (cascade[i].N < 10) {
 			break;
 		}
-		Serial.print(" i= ");
-		Serial.print(i);
+		Serial.print(" bin= ");
+		if (i == 0) {
+			Serial.print("1");
+		}
+		else {
+			Serial.print(2 << (i -1));
+		}
 		Serial.print(" N= ");
 		Serial.print(cascade[i].N);
 		Serial.print(" Adev= ");
