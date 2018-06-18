@@ -2,7 +2,7 @@
  * based on SparkFun_VL6180X_demo.ino
  * running on a min ESP8266 or clone 
  * https://www.aliexpress.com/item/5-sets-D1-Mini-Mini-nodemcu-4-m-bytes-moon-esp8266-WiFi-Internet-of-things-based/32770121685.html?spm=a2g0s.9042311.0.0.ZiSmQq
- * select Node-MCU 1.0 (ESP-12E) to program
+ * select NodeMCU 1.0 (ESP-12E module) to program
  * 
  * connected SCL -> D1 ; SDA -> D2 based on http://gdiye.co.za/shop/index.php?route=product/product&product_id=830
  * (though it seems other can be selected - apparently these are just the default i2c pins.
@@ -122,6 +122,18 @@ void print_cascade() {
 	Serial.println();
 }
 
+// reset all bins to clean state
+void reset_cascade() {
+	for (int i=0 ; i < N_bins ; i++) {
+		cascade[i].N = 0;
+		cascade[i].sum = 0.0;
+		cascade[i].sum_sq = 0.0;
+		cascade[i].prev =  0.0;
+		cascade[i].valid = i == 0 ? true : false;
+	};
+}
+
+
 void setup() {
 
   Serial.begin(115200); //Start Serial at 115200bps
@@ -139,18 +151,34 @@ void setup() {
   
   delay(1000); // delay 1s
   
-  for (int i=0 ; i < N_bins ; i++) {
-	  cascade[i].N = 0;
-	  cascade[i].sum = 0.0;
-	  cascade[i].sum_sq = 0.0;
-	  cascade[i].prev =  0.0;
-	  cascade[i].valid = i == 0 ? true : false;
-  };
+  reset_cascade();
 
 }
 
 void loop() {
   float distance;
+  String inString;
+  int inChar;
+  
+  while (Serial.available() > 0) {
+	inChar = Serial.read();
+	if (inChar != '\n') {
+		inString += (char)inChar;
+	}
+	else {
+		if (inString == "reset") {
+			reset_cascade();
+			Serial.println("Resetting cascade");
+		}
+		else {
+			Serial.print("unrecognized input *");
+			Serial.print(inString);
+			Serial.println("* - doing nothing");
+		}
+		inString = "";
+	}
+  }
+				
   //Get Ambient Light level and report in LUX
   Serial.print("Ambient Light Level (Lux) = ");
   
